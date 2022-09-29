@@ -12,6 +12,33 @@ doppler.disable('x-powered-by')
 doppler.use(express.json())
 const port = 3000
 
+doppler.use(async (req, res, next) => {
+  const apiKey: string | undefined = req.header('Authorization')?.split(' ')?.[1]
+  if (!apiKey) {
+    res.status(400).send('Bad Request')
+    return
+  }
+
+  const privateKey: string | undefined = await getPrivateKey(apiKey)
+  if (!privateKey) {
+    res.status(400).send('Bad Request')
+    return
+  }
+
+  const tokenSecretMap: Map<string, string> | undefined = await getTokenSecretMap(apiKey)
+  if (!tokenSecretMap) {
+    res.status(400).send('Bad Request')
+    return
+  }
+
+  req.context = {
+    privateKey,
+    tokenSecretMap
+  }
+
+  next()
+})
+
 doppler.get('/tokens', async (req: Request<{}, GetTokensResponse | string, {}, GetTokensRequest>, res): Promise<void> => {
   if (!req.query.t) {
     res.status(400).send('Bad Request')
@@ -28,17 +55,7 @@ doppler.get('/tokens', async (req: Request<{}, GetTokensResponse | string, {}, G
     }
   }
 
-  const tokenSecretMap: Map<string, string> | undefined = await getTokenSecretMap('DEV-API-KEY')
-  if (!tokenSecretMap) {
-    res.status(400).send('Bad Request')
-    return
-  }
-
-  const privateKey: string | undefined = await getPrivateKey('DEV-API-KEY')
-  if (!privateKey) {
-    res.status(400).send('Bad Request')
-    return
-  }
+  const { privateKey, tokenSecretMap } = req.context
 
   try {
     const secrets: string[] = await getSecrets(tokenSecretMap, tokens, privateKey)
@@ -64,17 +81,7 @@ doppler.post('/tokens', async (req: Request<{}, CreateTokenResponse | string, Cr
     return
   }
 
-  const tokenSecretMap: Map<string, string> | undefined = await getTokenSecretMap('DEV-API-KEY')
-  if (!tokenSecretMap) {
-    res.status(400).send('Bad Request')
-    return
-  }
-
-  const privateKey: string | undefined = await getPrivateKey('DEV-API-KEY')
-  if (!privateKey) {
-    res.status(400).send('Bad Request')
-    return
-  }
+  const { privateKey, tokenSecretMap } = req.context
 
   try {
     const token = await insertSecret(tokenSecretMap, req.body.secret, privateKey)
@@ -117,14 +124,8 @@ doppler.put('/tokens/:token', async (req: Request<CreateTokenResponse, CreateTok
 })
 
 doppler.delete('/tokens/:token', async (req: Request<CreateTokenResponse>, res) => {
-  const tokenSecretMap: Map<string, string> | undefined = await getTokenSecretMap('DEV-API-KEY')
-  if (!tokenSecretMap) {
-    res.status(400).send('Bad Request')
-    return
-  }
-
   try {
-    await deleteSecret(tokenSecretMap, req.params.token)
+    await deleteSecret(req.context.tokenSecretMap, req.params.token)
     res.status(204).end()
   } catch (err) {
     res.status(500).send('Internal Server Error')
