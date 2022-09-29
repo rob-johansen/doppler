@@ -1,4 +1,5 @@
 import express, { Request } from 'express'
+import rateLimit from 'express-rate-limit'
 
 import { deleteSecret, getPrivateKey, getSecrets, getTokenSecretMap, insertSecret } from 'src/store'
 import type CreateTokenResponse from 'src/types/CreateTokenResponse' // These should all be renamed to ...Body
@@ -11,6 +12,14 @@ const doppler = express()
 doppler.disable('x-powered-by')
 doppler.use(express.json())
 const port = 3000
+
+const RATE_LIMIT_MAX_REQUESTS = 5
+const RATE_LIMIT_WINDOW_MS = 1000 * 60
+
+doppler.use(rateLimit({
+  max: RATE_LIMIT_MAX_REQUESTS,
+  windowMs: RATE_LIMIT_WINDOW_MS
+}))
 
 doppler.use(async (req, res, next) => {
   const apiKey: string | undefined = req.header('Authorization')?.split(' ')?.[1]

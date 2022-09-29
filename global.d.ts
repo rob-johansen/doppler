@@ -5,6 +5,12 @@ declare global {
         privateKey: string
         tokenSecretMap: Map<string, string>
       }
+      rateLimit: {
+        current: number
+        limit: number
+        remaining: number
+        resetTime?: Date
+      }
     }
   }
 }
