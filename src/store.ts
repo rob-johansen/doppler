@@ -41,6 +41,11 @@ export const insertSecret = (tokenSecretMap: Map<string, string>, secret: string
   return Promise.resolve(token)
 }
 
+export const updateSecret = (token: string, tokenSecretMap: Map<string, string>, secret: string, privateKey: string): Promise<void> => {
+  tokenSecretMap.set(token, encrypt(secret, privateKey))
+  return Promise.resolve()
+}
+
 export const deleteSecret = (tokenSecretMap: Map<string, string>, token: string): Promise<void> => {
   tokenSecretMap.delete(token)
   return Promise.resolve()

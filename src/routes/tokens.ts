@@ -2,10 +2,9 @@ import express, { Response } from 'express'
 
 import {
   deleteSecret,
-  getPrivateKey,
   getSecrets,
-  getTokenSecretMap,
-  insertSecret
+  insertSecret,
+  updateSecret
 } from 'src/store'
 import type {
   DeleteTokenRequest,
@@ -72,38 +71,29 @@ router.post('/', async (req: PostTokenRequest, res: Response): Promise<void> => 
 })
 
 router.put('/:token', async (req: PutTokenRequest, res: Response): Promise<void> => {
-  // TODO .... Come back to this when you get a response from Matte.
   if (!req.body.secret) {
     res.status(400).send('Bad Request')
     return
   }
 
-  const tokenSecretMap: Map<string, string> | undefined = await getTokenSecretMap('DEV-API-KEY')
-  if (!tokenSecretMap) {
-    res.status(400).send('Bad Request')
-    return
-  }
-
-  const privateKey: string | undefined = await getPrivateKey('DEV-API-KEY')
-  if (!privateKey) {
-    res.status(400).send('Bad Request')
-    return
-  }
+  const { privateKey, tokenSecretMap } = req.context
+  const { token } = req.params
 
   try {
-    const [secret] = await getSecrets(tokenSecretMap, [req.params.token], privateKey)
+    const [secret] = await getSecrets(tokenSecretMap, [token], privateKey)
     if (!secret) {
       res.status(400).send('Bad Request')
       return
     }
 
-    // TODO ....
+    await updateSecret(token, tokenSecretMap, req.body.secret, privateKey)
+    res.status(204).end()
   } catch (err) {
-    // TODO ....
+    res.status(500).send('Internal Server Error')
   }
 })
 
-router.delete('/:token', async (req: DeleteTokenRequest, res: Response) => {
+router.delete('/:token', async (req: DeleteTokenRequest, res: Response): Promise<void> => {
   try {
     await deleteSecret(req.context.tokenSecretMap, req.params.token)
     res.status(204).end()
