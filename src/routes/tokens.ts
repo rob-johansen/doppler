@@ -1,22 +1,32 @@
-import express, { Request } from 'express'
-import CreateTokenResponse from 'src/types/CreateTokenResponse'
-import CreateTokenRequest from 'src/types/CreateTokenRequest'
-import { deleteSecret, getPrivateKey, getSecrets, getTokenSecretMap, insertSecret } from 'src/store'
-import GetTokensResponse from 'src/types/GetTokensResponse'
-import GetTokensRequest from 'src/types/GetTokensRequest'
+import express, { Response } from 'express'
+
+import {
+  deleteSecret,
+  getPrivateKey,
+  getSecrets,
+  getTokenSecretMap,
+  insertSecret
+} from 'src/store'
+import type {
+  DeleteTokenRequest,
+  GetTokensRequest,
+  GetTokensResponseBody,
+  PostTokenRequest,
+  PutTokenRequest
+} from 'src/types'
 
 const GET_TOKENS_LIMIT = 2
 
 const router = express.Router()
 
-router.get('/', async (req: Request<{}, GetTokensResponse | string, {}, GetTokensRequest>, res): Promise<void> => {
+router.get('/', async (req: GetTokensRequest, res: Response): Promise<void> => {
   if (!req.query.t) {
     res.status(400).send('Bad Request')
     return
   }
 
   const tokens = req.query.t.split(',', GET_TOKENS_LIMIT)
-  const response: GetTokensResponse = {}
+  const response: GetTokensResponseBody = {}
 
   for (const token of tokens) {
     if (token.length === 0) {
@@ -45,7 +55,7 @@ router.get('/', async (req: Request<{}, GetTokensResponse | string, {}, GetToken
   }
 })
 
-router.post('/', async (req: Request<{}, CreateTokenResponse | string, CreateTokenRequest, {}>, res): Promise<void> => {
+router.post('/', async (req: PostTokenRequest, res: Response): Promise<void> => {
   if (!req.body.secret) {
     res.status(400).send('Bad Request')
     return
@@ -61,7 +71,7 @@ router.post('/', async (req: Request<{}, CreateTokenResponse | string, CreateTok
   }
 })
 
-router.put('/:token', async (req: Request<CreateTokenResponse, CreateTokenResponse | string, CreateTokenRequest, {}>, res): Promise<void> => {
+router.put('/:token', async (req: PutTokenRequest, res: Response): Promise<void> => {
   // TODO .... Come back to this when you get a response from Matte.
   if (!req.body.secret) {
     res.status(400).send('Bad Request')
@@ -93,7 +103,7 @@ router.put('/:token', async (req: Request<CreateTokenResponse, CreateTokenRespon
   }
 })
 
-router.delete('/:token', async (req: Request<CreateTokenResponse>, res) => {
+router.delete('/:token', async (req: DeleteTokenRequest, res: Response) => {
   try {
     await deleteSecret(req.context.tokenSecretMap, req.params.token)
     res.status(204).end()
