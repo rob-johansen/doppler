@@ -1,10 +1,9 @@
+import { RequestContext } from 'src/types'
+
 declare global {
   namespace Express {
     export interface Request {
-      context: {
-        privateKey: string
-        tokenSecretMap: Map<string, string>
-      }
+      context: RequestContext
       rateLimit: {
         current: number
         limit: number

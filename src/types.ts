@@ -1,5 +1,11 @@
 import { Request } from 'express'
 
+/* Context available on all requests */
+export interface RequestContext {
+  privateKey: string
+  tokenSecretMap: Map<string, string>
+}
+
 /* GET endpoint types */
 export interface GetTokensResponseBody {
   [token: string]: string

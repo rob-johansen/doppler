@@ -4,8 +4,7 @@ import rateLimit from 'express-rate-limit'
 import { getPrivateKey, getTokenSecretMap } from 'src/store'
 import tokenRoutes from './routes/tokens'
 
-const PORT = 3000
-const RATE_LIMIT_MAX_REQUESTS = 5
+const RATE_LIMIT_MAX_REQUESTS = 10
 const RATE_LIMIT_WINDOW_MS = 1000 * 60
 
 const doppler = express()
@@ -52,6 +51,4 @@ doppler.use(async (req, res, next): Promise<void> => {
 
 doppler.use('/tokens', tokenRoutes)
 
-doppler.listen(PORT, () => {
-  console.log(`Doppler tokenization service listening on port ${PORT}`)
-})
+export default doppler

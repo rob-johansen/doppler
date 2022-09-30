@@ -24,8 +24,11 @@ router.get('/', async (req: GetTokensRequest, res: Response): Promise<void> => {
     return
   }
 
-  const tokens = req.query.t.split(',', GET_TOKENS_LIMIT)
-  const response: GetTokensResponseBody = {}
+  const tokens = req.query.t.split(',')
+  if (tokens.length > GET_TOKENS_LIMIT) {
+    res.status(400).send('Bad Request')
+    return
+  }
 
   for (const token of tokens) {
     if (token.length === 0) {
@@ -34,15 +37,16 @@ router.get('/', async (req: GetTokensRequest, res: Response): Promise<void> => {
     }
   }
 
-  const { privateKey, tokenSecretMap } = req.context
-
   try {
+    const { privateKey, tokenSecretMap } = req.context
     const secrets: string[] = await getSecrets(tokenSecretMap, tokens, privateKey)
 
     if (secrets.length !== tokens.length) {
       res.status(400).send('Bad Request')
       return
     }
+
+    const response: GetTokensResponseBody = {}
 
     for (let i = 0; i < secrets.length; i++) {
       response[tokens[i]] = secrets[i]
@@ -60,9 +64,8 @@ router.post('/', async (req: PostTokenRequest, res: Response): Promise<void> => 
     return
   }
 
-  const { privateKey, tokenSecretMap } = req.context
-
   try {
+    const { privateKey, tokenSecretMap } = req.context
     const token = await insertSecret(tokenSecretMap, req.body.secret, privateKey)
     res.status(201).send({ token })
   } catch (err) {
@@ -76,10 +79,9 @@ router.put('/:token', async (req: PutTokenRequest, res: Response): Promise<void>
     return
   }
 
-  const { privateKey, tokenSecretMap } = req.context
-  const { token } = req.params
-
   try {
+    const { privateKey, tokenSecretMap } = req.context
+    const { token } = req.params
     const [secret] = await getSecrets(tokenSecretMap, [token], privateKey)
     if (!secret) {
       res.status(400).send('Bad Request')

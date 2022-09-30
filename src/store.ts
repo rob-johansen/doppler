@@ -1,15 +1,20 @@
 import { createPrivateKey, decrypt, encrypt } from 'src/crypto'
 import { v4 as uuidv4 } from 'uuid'
 
-// Simulated API key
-const API_KEY = 'DEV-API-KEY'
+// Simulated API keys
+export const API_KEY_1 = 'API-KEY-1'
+export const API_KEY_2 = 'API-KEY-2'
 
 // Simulated storage of API keys mapped to private keys
-const API_KEY_MAP: Map<string, string> = new Map([[API_KEY, createPrivateKey()]])
+const API_KEY_MAP: Map<string, string> = new Map([
+  [API_KEY_1, createPrivateKey()],
+  [API_KEY_2, createPrivateKey()],
+])
 
 // Simulated storage of API keys mapped to tokens and encrypted secrets
 const API_TOKEN_MAP: Map<string, Map<string, string>> = new Map()
-API_TOKEN_MAP.set(API_KEY, new Map())
+API_TOKEN_MAP.set(API_KEY_1, new Map())
+API_TOKEN_MAP.set(API_KEY_2, new Map())
 
 const TOKEN_PREFIX = 'dp.token.'
 
