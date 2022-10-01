@@ -28,7 +28,7 @@ I designed the service to provide as little information as possible:
 - The `x-powered-by` header is disabled
 - All client errors result in a 400 status, making it impossible to probe the endpoints with
   varying inputs and glean information from changing status codes. I acknowledge that this
-  is a contorversial decision.
+  is a controversial decision.
 
 ##### Tests
 
