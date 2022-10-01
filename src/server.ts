@@ -4,7 +4,7 @@ import rateLimit from 'express-rate-limit'
 import { getPrivateKey, getTokenSecretMap } from 'src/store'
 import tokenRoutes from './routes/tokens'
 
-const RATE_LIMIT_MAX_REQUESTS = 10
+const RATE_LIMIT_MAX_REQUESTS = 14
 const RATE_LIMIT_WINDOW_MS = 1000 * 60
 
 const doppler = express()
