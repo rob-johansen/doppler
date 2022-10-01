@@ -14,6 +14,10 @@ import type {
   PutTokenRequest
 } from 'src/types'
 
+// I set the limit for GET requests to 2 because that's what the
+// instructions showed; however, in a real service this limit
+// would potentially be much higher--although it wouldn't be
+// unlimited.
 const GET_TOKENS_LIMIT = 2
 
 const router = express.Router()
